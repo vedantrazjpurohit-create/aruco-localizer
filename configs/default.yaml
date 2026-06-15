@@ -1,0 +1,10 @@
+dictionary: DICT_4X4_50
+marker_length_mm: 100
+
+camera:
+  fx: 800.0
+  fy: 800.0
+  cx: 320.0
+  cy: 240.0
+  width: 640
+  height: 480
