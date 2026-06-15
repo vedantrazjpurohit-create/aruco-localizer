@@ -11,6 +11,12 @@ I built this to get a clean vision → pose → telemetry pipeline before wiring
 - Streams telemetry: marker id, corner pixels, pose vector, detection confidence proxy
 - Saves annotated frames for quick debugging
 
+## Output example
+
+Detected marker id 0 with pose axes drawn:
+
+![Detection example](docs/detection_example.png)
+
 ## Quick start
 
 ```bash
