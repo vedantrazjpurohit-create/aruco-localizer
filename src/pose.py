@@ -18,15 +18,11 @@ def camera_matrix_from_config(cfg: dict) -> np.ndarray:
     )
 
 
-def estimate_marker_poses(
+def solve_marker_poses(
     corners: list[np.ndarray],
-    ids: list[int],
     camera_matrix: np.ndarray,
     marker_length_m: float,
-) -> list[dict]:
-    if not ids:
-        return []
-
+) -> tuple[np.ndarray, np.ndarray]:
     dist_coeffs = np.zeros((4, 1), dtype=np.float64)
     rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(
         corners,
@@ -34,17 +30,35 @@ def estimate_marker_poses(
         camera_matrix,
         dist_coeffs,
     )
+    return rvecs, tvecs
+
+
+def estimate_marker_poses(
+    corners: list[np.ndarray],
+    ids: list[int],
+    camera_matrix: np.ndarray,
+    marker_length_m: float,
+    rvecs: np.ndarray | None = None,
+    tvecs: np.ndarray | None = None,
+) -> list[dict]:
+    if not ids:
+        return []
+
+    if rvecs is None or tvecs is None:
+        rvecs, tvecs = solve_marker_poses(corners, camera_matrix, marker_length_m)
 
     results: list[dict] = []
     for marker_id, rvec, tvec, corner in zip(ids, rvecs, tvecs, corners):
         yaw_deg = _yaw_from_rvec(rvec)
         corner_pts = corner.reshape(4, 2).astype(int).tolist()
         tvec_mm = (tvec.reshape(3) * 1000.0).round(1).tolist()
+        distance_mm = round(float(np.linalg.norm(tvec.reshape(3)) * 1000.0), 1)
 
         results.append(
             {
                 "id": int(marker_id),
                 "tvec_mm": tvec_mm,
+                "distance_mm": distance_mm,
                 "yaw_deg": round(yaw_deg, 1),
                 "corners": corner_pts,
             }
@@ -56,21 +70,15 @@ def estimate_marker_poses(
 def draw_axes(
     frame: np.ndarray,
     camera_matrix: np.ndarray,
-    corners: list[np.ndarray],
+    rvecs: np.ndarray,
+    tvecs: np.ndarray,
     marker_length_m: float,
 ) -> np.ndarray:
     output = frame.copy()
-    if not corners:
+    if rvecs is None or len(rvecs) == 0:
         return output
 
     dist_coeffs = np.zeros((4, 1), dtype=np.float64)
-    rvecs, tvecs, _ = cv2.aruco.estimatePoseSingleMarkers(
-        corners,
-        marker_length_m,
-        camera_matrix,
-        dist_coeffs,
-    )
-
     for rvec, tvec in zip(rvecs, tvecs):
         cv2.drawFrameAxes(output, camera_matrix, dist_coeffs, rvec, tvec, marker_length_m * 0.5)
 

@@ -8,7 +8,7 @@ import numpy as np
 import yaml
 
 from src.detector import detect_markers, draw_detections, get_dictionary
-from src.pose import camera_matrix_from_config, draw_axes, estimate_marker_poses
+from src.pose import camera_matrix_from_config, draw_axes, estimate_marker_poses, solve_marker_poses
 
 
 def load_config(path: str | Path) -> dict:
@@ -22,10 +22,18 @@ def process_frame(frame: np.ndarray, cfg: dict) -> tuple[dict, np.ndarray]:
 
     camera_matrix = camera_matrix_from_config(cfg)
     marker_length_m = cfg["marker_length_mm"] / 1000.0
-    markers = estimate_marker_poses(corners, ids, camera_matrix, marker_length_m)
+
+    rvecs = tvecs = None
+    if ids:
+        rvecs, tvecs = solve_marker_poses(corners, camera_matrix, marker_length_m)
+
+    markers = estimate_marker_poses(
+        corners, ids, camera_matrix, marker_length_m, rvecs=rvecs, tvecs=tvecs
+    )
 
     annotated = draw_detections(frame, corners, ids)
-    annotated = draw_axes(annotated, camera_matrix, corners, marker_length_m)
+    if rvecs is not None and tvecs is not None:
+        annotated = draw_axes(annotated, camera_matrix, rvecs, tvecs, marker_length_m)
 
     telemetry = {"markers": markers, "count": len(markers)}
     return telemetry, annotated

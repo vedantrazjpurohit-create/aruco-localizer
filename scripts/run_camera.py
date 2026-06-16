@@ -30,7 +30,8 @@ def main() -> None:
             break
 
         telemetry, annotated = process_frame(frame, cfg)
-        print(json.dumps(telemetry))
+        if telemetry["count"]:
+            print(json.dumps(telemetry))
 
         cv2.imshow("aruco-localizer", annotated)
         if cv2.waitKey(1) & 0xFF == ord("q"):

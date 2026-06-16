@@ -28,6 +28,14 @@ def test_detect_generated_marker():
     assert len(corners) == 1
 
 
+def test_empty_frame_returns_no_markers():
+    dictionary = get_dictionary("DICT_4X4_50")
+    blank = np.full((240, 320, 3), 255, dtype=np.uint8)
+    corners, ids, _ = detect_markers(blank, dictionary)
+    assert ids == []
+    assert corners == []
+
+
 def test_pipeline_on_sample_image():
     sample = ROOT / "data" / "sample_marker.png"
     if not sample.exists():
@@ -40,4 +48,5 @@ def test_pipeline_on_sample_image():
 
     assert telemetry["count"] == 1
     assert telemetry["markers"][0]["id"] == 0
+    assert telemetry["markers"][0]["distance_mm"] > 0
     assert annotated.shape[0] > 0
