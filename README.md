@@ -75,3 +75,9 @@ Python 3.11 · OpenCV · NumPy · pytest
 - [ ] UART bridge to ESP32
 - [ ] Multi-marker map fusion
 - [ ] ROS2 node wrapper
+
+## Related repos
+
+- [rag-eval-bench](https://github.com/vedantrazjpurohit-create/rag-eval-bench) — retrieval evaluation harness
+- [rag-api](https://github.com/vedantrazjpurohit-create/rag-api) — HTTP layer over the same retrieval stack
+- [student-crud-c](https://github.com/vedantrazjpurohit-create/student-crud-c) — C fundamentals practice
